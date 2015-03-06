@@ -1,7 +1,7 @@
 require 'rspec'
 require_relative '../lib/test_sample_watir'
 
-browser = TestSampleWatir::Core::WebBrowser.initialize_browser('chrome')
+browser = TestSampleWatir::Core::WebBrowser.initialize_browser('ff')
 
 STATUS_NEW = 'New'
 STATUS_EDITED = 'Edited'
@@ -25,6 +25,7 @@ RSpec.configure do |config|
     end
     #cleaning changed status 'New'
     begin
+      dashboard_page = TestSampleWatir::Web::DashboardPage.new(browser)
       dashboard_page.goto_settings
       settings_page = TestSampleWatir::Web::SettingsPage.new(browser)
       settings_page.goto_leads_settings

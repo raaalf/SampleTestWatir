@@ -30,7 +30,6 @@ module TestSampleWatir
         region_input.set('Lesser Poland')
         zip_input.set('30-069')
         select_country('Poland')
-        tag_input.set('test_lead')
       end
 
       #
@@ -102,10 +101,6 @@ module TestSampleWatir
         selected_country.click
         elem = @browser.div(:class, 'controls inline country_select').div.ul(:class, 'chzn-results').li(:text, country)
         elem.click unless elem == nil
-      end
-
-      def tag_input
-        @browser.div(:class, 'tags-field').div.div.div.div.ul.li.text_field
       end
 
     end
