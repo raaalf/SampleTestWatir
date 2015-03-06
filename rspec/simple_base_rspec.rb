@@ -1,7 +1,10 @@
 require 'rspec'
 require_relative '../lib/test_sample_watir'
 
-browser = TestSampleWatir::Core::WebBrowser.initialize_browser('ff')
+#
+# you can change here browser, available values: 'çhrome', 'ff', 'ie'
+#
+browser = TestSampleWatir::Core::WebBrowser.initialize_browser('ie')
 
 STATUS_NEW = 'New'
 STATUS_EDITED = 'Edited'

@@ -10,11 +10,15 @@ module TestSampleWatir
       def self.initialize_browser(browser_type)
         case browser_type
           when 'chrome'
-            return Watir::Browser.new :chrome
+            return Watir::Browser.new(:chrome, :switches => %w[--start-maximized] )
           when 'ff'
-            return Watir::Browser.new :firefox
+            browser = Watir::Browser.new :firefox
+            browser.window.maximize
+            return browser
           when 'ie'
-            return Watir::Browser.new :ie
+            browser = Watir::Browser.new :ie
+            browser.window.maximize
+            return browser
           else
             return Watir::Browser.new :chrome
         end
