@@ -4,7 +4,7 @@ require_relative '../lib/test_sample_watir'
 #
 # you can change here browser, available values: 'çhrome', 'ff', 'ie'
 #
-browser = TestSampleWatir::Core::WebBrowser.initialize_browser('ie')
+browser = TestSampleWatir::Core::WebBrowser.initialize_browser('chrome')
 
 STATUS_NEW = 'New'
 STATUS_EDITED = 'Edited'
