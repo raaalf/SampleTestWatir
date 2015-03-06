@@ -1,0 +1,8 @@
+require_relative 'test_sample_watir/core/web_browser'
+require_relative 'test_sample_watir/web/base_main_page'
+require_relative 'test_sample_watir/web/login_page'
+require_relative 'test_sample_watir/web/dashboard_page'
+require_relative 'test_sample_watir/web/leads_page'
+require_relative 'test_sample_watir/web/new_lead_page'
+require_relative 'test_sample_watir/web/settings_page'
+require_relative 'test_sample_watir/web/lead_view_page'
