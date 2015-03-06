@@ -3,29 +3,37 @@ require_relative '../lib/test_sample_watir'
 
 browser = TestSampleWatir::Core::WebBrowser.initialize_browser('chrome')
 
+STATUS_NEW = 'New'
+STATUS_EDITED = 'Edited'
+LEAD_FIRST_NAME = 'TestFirst'
+LEAD_LAST_NAME = 'TestLast'
+
 RSpec.configure do |config|
   config.before(:each) { @browser = browser }
 
   config.after(:suite) {
-    begin
     #cleaning created Lead
-    dashboard_page = TestSampleWatir::Web::DashboardPage.new(browser)
-    dashboard_page.goto_leads
-    leads_page = TestSampleWatir::Web::LeadsPage.new(browser)
-    leads_page.lead_by_name('TestFirst', 'TestLast').click
-    lead_view_page = TestSampleWatir::Web::LeadViewPage.new(browser)
-    lead_view_page.remove_lead
-    #cleaning changed status 'New'
-    dashboard_page.goto_settings
-    settings_page = TestSampleWatir::Web::SettingsPage.new(browser)
-    settings_page.goto_leads_settings
-    settings_page.goto_lead_statuses
-    if settings_page.status_edit_button('Edited').present?
-      settings_page.changeStatusName('Edited', 'New')
-      settings_page.status_edit_button('New').should exist
+    begin
+      dashboard_page = TestSampleWatir::Web::DashboardPage.new(browser)
+      dashboard_page.goto_leads
+      leads_page = TestSampleWatir::Web::LeadsPage.new(browser)
+      leads_page.lead_by_name(LEAD_FIRST_NAME, LEAD_LAST_NAME).click
+      lead_view_page = TestSampleWatir::Web::LeadViewPage.new(browser)
+      lead_view_page.remove_lead
+    rescue Exception => e
+      puts 'Problem during removing created lead: '+e.message
     end
-    rescue
-      puts 'problem during cleaning'
+    #cleaning changed status 'New'
+    begin
+      dashboard_page.goto_settings
+      settings_page = TestSampleWatir::Web::SettingsPage.new(browser)
+      settings_page.goto_leads_settings
+      settings_page.goto_lead_statuses
+      if settings_page.status_edit_button(STATUS_EDITED).present?
+        settings_page.change_status_name(STATUS_EDITED, STATUS_NEW)
+      end
+    rescue Exception => e
+      puts 'Problem during changing status back: '+e.message
     end
     #closing browser
     browser.close unless browser.nil?
@@ -35,88 +43,77 @@ end
 
 describe 'Simple Base test using Watir' do
 
-  describe 'Start from Base main page' do
-    it 'which should contains marketing text' do
+  describe 'Login into Base app' do
+    it 'should start from main page' do
       main_page = TestSampleWatir::Web::BaseMainPage.new(@browser)
       main_page.open
-      main_page.text.should include('SALES TEAMS THAT USE BASE SELL MORE')
+      expect(main_page.text).to include('SALES TEAMS THAT USE BASE SELL MORE')
       main_page.goto_login
     end
-  end
-
-  describe 'On login page' do
-    it 'try to login' do
+    it 'on login page should log with credential' do
       login_page = TestSampleWatir::Web::LoginPage.new(@browser)
-      login_page.text.should include('Log in to your account')
+      expect(login_page.text).to include('Log in to your account')
       login_page.login_as('rafalmalski@gmail.com', 'testbase')
+      dashboard_page = TestSampleWatir::Web::DashboardPage.new(@browser)
+      expect(dashboard_page.text).to include('Dashboard')
     end
   end
 
-  describe 'After login Dashboard page will be opened' do
+  describe 'Creating new Lead' do
     it 'go to Leads manager' do
       dashboard_page = TestSampleWatir::Web::DashboardPage.new(@browser)
-      dashboard_page.text.should include('Dashboard')
       dashboard_page.goto_leads
-    end
-  end
-
-  describe 'Go to Leads' do
-    it 'where we should be able to create new Lead' do
       leads_page = TestSampleWatir::Web::LeadsPage.new(@browser)
-      leads_page.new_lead_button.should exist
-      leads_page.goto_create_lead
+      expect(leads_page.new_lead_button).to exist
     end
-  end
-
-  describe 'On New Lead' do
+    it 'got o lead create view' do
+      leads_page = TestSampleWatir::Web::LeadsPage.new(@browser)
+      leads_page.goto_create_lead
+      new_lead_page = TestSampleWatir::Web::NewLeadPage.new(@browser)
+      expect(new_lead_page.first_name_input).to exist
+    end
     it 'create new test lead' do
       new_lead_page = TestSampleWatir::Web::NewLeadPage.new(@browser)
-      new_lead_page.first_name_input.should exist
-      new_lead_page.fill_new_lead_data('TestFirst', 'TestLast')
+      expect(new_lead_page.first_name_input).to exist
+      new_lead_page.fill_new_lead_data(LEAD_FIRST_NAME, LEAD_LAST_NAME)
       new_lead_page.save_button.click
     end
-  end
-
-  describe 'Successful creation' do
-    it 'should end on lead view page' do
+    it 'created lead name has to fit' do
       lead_view_page = TestSampleWatir::Web::LeadViewPage.new(@browser)
-      lead_view_page.lead_name.text.should equal?('TestFirst TestLast')
+      expect(lead_view_page.lead_name.text).to eq(LEAD_FIRST_NAME+' '+LEAD_LAST_NAME)
     end
   end
 
-  describe 'Look for Lead statuses in settings' do
-    it 'should show statuses tab' do
+  describe "Change 'New' status" do
+    it 'should go to settings page' do
       dashboard_page = TestSampleWatir::Web::DashboardPage.new(@browser)
       dashboard_page.goto_settings
       settings_page = TestSampleWatir::Web::SettingsPage.new(@browser)
-      settings_page.text.should include('Settings')
+      expect(settings_page.text).to include('Settings')
+    end
+    it 'go to leads settings' do
+      settings_page = TestSampleWatir::Web::SettingsPage.new(@browser)
       settings_page.goto_leads_settings
-      settings_page.lead_statuses_tab.should exist
-    end
-    it 'find specific status' do
-      settings_page = TestSampleWatir::Web::SettingsPage.new(@browser)
+      expect(settings_page.lead_statuses_tab).to exist
       settings_page.goto_lead_statuses
-      settings_page.status_edit_button('New').should exist
+      expect(settings_page.status_edit_button(STATUS_NEW)).to exist
     end
-    it 'change status name' do
+    it "change status name to 'Edit'" do
       settings_page = TestSampleWatir::Web::SettingsPage.new(@browser)
-      settings_page.changeStatusName('New', 'Edited')
-      settings_page.status_edit_button('Edited').should exist
+      settings_page.change_status_name(STATUS_NEW, STATUS_EDITED)
+      expect(settings_page.status_edit_button(STATUS_EDITED)).to exist
     end
   end
 
-  describe 'Go to Leads' do
-    it 'new lead should be present in leads list' do
+  describe 'Checked changed status' do
+    it 'check it in created Lead decsription' do
       dashboard_page = TestSampleWatir::Web::DashboardPage.new(@browser)
       dashboard_page.goto_leads
       leads_page = TestSampleWatir::Web::LeadsPage.new(@browser)
-      leads_page.lead_by_name('TestFirst', 'TestLast').should exist
-    end
-    it 'on Lead view we should have new status' do
-      leads_page = TestSampleWatir::Web::LeadsPage.new(@browser)
-      leads_page.lead_by_name('TestFirst', 'TestLast').click
+      expect(leads_page.lead_by_name(LEAD_FIRST_NAME, LEAD_LAST_NAME)).to exist
+      leads_page.lead_by_name(LEAD_FIRST_NAME, LEAD_LAST_NAME).click
       lead_view_page = TestSampleWatir::Web::LeadViewPage.new(@browser)
-      lead_view_page.status_label.text.should equal?('Edited')
+      expect(lead_view_page.status_label.text).to eq(STATUS_EDITED)
     end
   end
 

@@ -17,15 +17,16 @@ module TestSampleWatir
 
       def goto_lead_statuses
         lead_statuses_tab.click
+        wait_until {add_lead_status_button.present?}
       end
 
-      def changeStatusName(old_name, new_name)
+      def change_status_name(old_name, new_name)
         edit = status_edit_button(old_name)
         wait_until {edit.present?}
         edit.click
-        wait_until {status_name_input.exists?}
-        status_name_input.set(new_name)
-        save_button.click
+        wait_until {status_name_input(old_name).exists?}
+        status_name_input(old_name).set(new_name)
+        save_button(old_name).click
         wait_until {status_edit_button(new_name).present?}
       end
 
@@ -45,16 +46,20 @@ module TestSampleWatir
         @browser.link(:href, '#lead-status')
       end
 
-      def status_name_input
-        @browser.text_field(:id => 'name', :name => 'name')
+      def status_name_input(name_value)
+        @browser.text_field(:id => 'name', :name => 'name', :value => name_value)
       end
 
-      def save_button
-        @browser.button(:text, 'Save')
+      def save_button(name_value)
+        @browser.element(:xpath, "//form/fieldset[div/div/input[@value='#{name_value}' and @id='name']]/div/div/button[text()='Save']")
       end
 
       def status_edit_button(status_name)
         @browser.element(:xpath, "//div[@class='control-group item'][label//text()='#{status_name}']/div/div/button[text()='Edit']")
+      end
+
+      def add_lead_status_button
+        @browser.div(:class, 'new-named-object').div.div.element(:xpath, "//button[contains(text(), 'Add Lead Status')]")
       end
 
     end
